@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Library.API.Entities;
+using Library.API.Helpers;
 using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,23 @@ namespace Library.API.Controllers
             _repo = repo;
         }
 
+        [HttpGet("({ids})", Name = "GetAuthorCollection")]
+        public IActionResult GetAuthorCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        {
+            if (ids == null)
+                return BadRequest();
+
+            var authorEntries = _repo.GetAuthors().Where( x => ids.Contains(x.Id));
+
+            if (ids.Count() != authorEntries.Count())
+                return NotFound();
+
+            var authorsToReturn = Mapper.Map<IEnumerable<AuthorDto>>(authorEntries);
+            return Ok(authorsToReturn);
+
+        }
+
+
         [HttpPost()]
         public IActionResult CreateAuthorCollection([FromBody] IEnumerable<AuthorCreationDto> authorsFromBody)
         {
@@ -36,7 +54,10 @@ namespace Library.API.Controllers
             if (!_repo.SaveContext())
                 throw new Exception("An error occurred while adding a collection of authors");
 
-            return Ok();
+            var authorsToReturn = Mapper.Map<IEnumerable<AuthorDto>>(authorEntities);
+            var idsAsString = string.Join(",", authorsToReturn.Select(x => x.Id));
+
+            return CreatedAtRoute("GetAuthorCollection", new { ids = idsAsString }, authorsToReturn);
         }
     }
 }
