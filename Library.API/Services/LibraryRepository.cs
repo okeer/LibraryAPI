@@ -90,12 +90,12 @@ namespace Library.API.Services
 
         public void UpdateAuthor(Author author)
         {
-            throw new NotImplementedException();
+            //EF controlled
         }
 
         public void UpdateBook(Book book)
         {
-            throw new NotImplementedException();
+            //EF controlled
         }
     }
 }
