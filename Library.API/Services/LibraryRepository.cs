@@ -40,6 +40,11 @@ namespace Library.API.Services
             _ctx.Authors.Remove(author);
         }
 
+        public void DeleteBook(Book book)
+        {
+            _ctx.Books.Remove(book);
+        }
+
         public Author GetAuthor(Guid authorId)
         {
             return _ctx.Authors.FirstOrDefault(x => x.Id == authorId);

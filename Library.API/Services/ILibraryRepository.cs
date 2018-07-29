@@ -22,6 +22,7 @@ namespace Library.API.Services
         Book GetBookForAuthor(Guid bookId, Guid authorId);
         void AddBookForAuthor(Book book, Guid authorId);
         void UpdateBook(Book book);
+        void DeleteBook(Book book);
 
         bool SaveContext();
     }
