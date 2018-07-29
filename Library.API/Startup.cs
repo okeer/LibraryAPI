@@ -77,9 +77,16 @@ namespace Library.API
             AutoMapper.Mapper.Initialize(c =>
             {
                 c.CreateMap<Book, BookDto>()
-                .ForMember(dest => dest.AuthorName, opt => opt.ResolveUsing<BookDtoToAuthorResolver>());
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => $"{src.Author.FirstName} {src.Author.LastName}"));
+
+                c.CreateMap<Book, BookCreationDto>()
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => $"{src.Author.FirstName} {src.Author.LastName}"));
+
                 c.CreateMap<Author, AuthorDto>()
-                .ForMember(dest => dest.Name, opt => opt.ResolveUsing<AuthorDtoToAuthorResolver>());
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+
+                c.CreateMap<Author, AuthorCreationDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
             });
             AutoMapper.Mapper.AssertConfigurationIsValid();
         }
