@@ -29,7 +29,7 @@ namespace Library.API.Controllers
             return Ok(Mapper.Map<IEnumerable<Book>, IEnumerable<BookDto>>(_repo.GetBooksForAuthor(authorId)));
         }
 
-        [HttpGet("{bookId}")]
+        [HttpGet("{bookId}", Name = "GetBookForAuthor")]
         public IActionResult GetBookForAuthor(Guid authorId, Guid bookId)
         {
             if (!_repo.IsAuthorExists(authorId))
@@ -40,6 +40,26 @@ namespace Library.API.Controllers
                 return NotFound();
 
             return Ok(Mapper.Map<Book, BookDto>(bookFromRepo));
+        }
+
+        [HttpPost()]
+        public IActionResult CreateBookForAuthor(Guid authorId, [FromBody] BookCreationDto bookForCreation)
+        {
+            if (bookForCreation == null)
+                return BadRequest();
+
+            if (!_repo.IsAuthorExists(authorId))
+                return NotFound();
+
+            var bookEntity = Mapper.Map<Book>(bookForCreation);
+            _repo.AddBookForAuthor(bookEntity, authorId);
+
+            if (!_repo.SaveContext())
+                throw new Exception("An error occured while adding a book for author");
+
+            var bookToReturn = Mapper.Map<BookDto>(bookEntity);
+
+            return CreatedAtRoute("GetBookForAuthor", new { authorId = bookEntity.AuthorId, bookId = bookEntity.Id }, bookToReturn);
         }
     }
 }
