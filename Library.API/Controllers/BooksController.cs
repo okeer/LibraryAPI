@@ -2,6 +2,7 @@
 using Library.API.Entities;
 using Library.API.Models;
 using Library.API.Services;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -106,6 +107,33 @@ namespace Library.API.Controllers
             _repo.UpdateBook(bookEntity);
             if (!_repo.SaveContext())
                 throw new Exception("An error occurred while updating a book resource");
+
+            return NoContent();
+        }
+
+        [HttpPatch("{bookId}")]
+        public IActionResult PatchBookForAuthor(Guid authorId, Guid bookId, [FromBody] JsonPatchDocument<BookCreationDto> jsonPatch)
+        {
+            if (jsonPatch == null)
+                return BadRequest();
+
+            if (!_repo.IsAuthorExists(authorId))
+                return NotFound();
+
+            var bookEntity = _repo.GetBookForAuthor(bookId, authorId);
+            if (bookEntity == null)
+                return NotFound();
+
+            var bookCreationDto = Mapper.Map<BookCreationDto>(bookEntity);
+            jsonPatch.ApplyTo(bookCreationDto);
+
+            if (!ModelState.IsValid)
+                throw new Exception("Something went wrong");
+
+            Mapper.Map(bookCreationDto, bookEntity);
+            _repo.UpdateBook(bookEntity);
+            if (!_repo.SaveContext())
+                throw new Exception("Error while saving crx");
 
             return NoContent();
         }
