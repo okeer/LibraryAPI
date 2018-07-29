@@ -26,7 +26,7 @@ namespace Library.API.Controllers
             return Ok(Mapper.Map<IEnumerable<AuthorDto>>(_repo.GetAuthors()));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetAuthor")]
         public IActionResult GetAuthor(Guid id)
         {
             var authorFromRepo = _repo.GetAuthor(id);
@@ -37,9 +37,21 @@ namespace Library.API.Controllers
         }
 
         [HttpPost()]
-        public IActionResult AddAuthor()
+        public IActionResult AddAuthor([FromBody] AuthorCreationDto author)
         {
-            throw new Exception("123");
+            if (author == null)
+                return BadRequest();
+
+            var authorEntity = Mapper.Map<Author>(author);
+            _repo.AddAuthor(authorEntity);
+
+            if (!_repo.SaveContext())
+                throw new Exception("Error while creating author");
+            //return StatusCode(500, "Server error");
+
+            var authorToReturn = Mapper.Map<AuthorDto>(authorEntity);
+
+            return CreatedAtRoute("GetAuthor", new { id = authorToReturn.Id }, authorToReturn);
         }
 
     }

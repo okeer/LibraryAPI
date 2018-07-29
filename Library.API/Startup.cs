@@ -79,14 +79,17 @@ namespace Library.API
                 c.CreateMap<Book, BookDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => $"{src.Author.FirstName} {src.Author.LastName}"));
 
-                c.CreateMap<Book, BookCreationDto>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => $"{src.Author.FirstName} {src.Author.LastName}"));
+                c.CreateMap<BookCreationDto, Book>()
+                .ForMember(x => x.Id, opt => opt.Ignore())
+                .ForMember(x => x.Author, opt => opt.Ignore())
+                .ForMember(x => x.AuthorId, opt => opt.Ignore());
 
                 c.CreateMap<Author, AuthorDto>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
 
-                c.CreateMap<Author, AuthorCreationDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+                c.CreateMap<AuthorCreationDto, Author>()
+                .ForMember(x => x.Books, opt => opt.Ignore())
+                .ForMember(x => x.Id, opt => opt.Ignore());
             });
             AutoMapper.Mapper.AssertConfigurationIsValid();
         }
