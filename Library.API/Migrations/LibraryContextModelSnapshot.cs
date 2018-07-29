@@ -20,7 +20,7 @@ namespace Library.API.Migrations
                 .HasAnnotation("ProductVersion", "2.0.3-rtm-10026")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Library.API.Entities.Author", b =>
+            modelBuilder.Entity("Library.API.Entities.AuthorName", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
@@ -61,7 +61,7 @@ namespace Library.API.Migrations
 
             modelBuilder.Entity("Library.API.Entities.Book", b =>
                 {
-                    b.HasOne("Library.API.Entities.Author", "Author")
+                    b.HasOne("Library.API.Entities.AuthorName", "AuthorName")
                         .WithMany("Books")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade);

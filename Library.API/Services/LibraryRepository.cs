@@ -60,17 +60,22 @@ namespace Library.API.Services
 
         public Book GetBookForAuthor(Guid bookId, Guid authorId)
         {
-            return GetBooksForAuthor(authorId).FirstOrDefault(x => x.Id == bookId);
+            return _ctx.Books.Where(x => x.AuthorId == authorId && x.Id == bookId).FirstOrDefault();
         }
 
         public IEnumerable<Book> GetBooksForAuthor(Guid authorId)
         {
-            return GetAuthor(authorId).Books.ToList();
+            return _ctx.Books.Where(x => x.AuthorId == authorId).ToList();
         }
 
         public bool IsAuthorExists(Guid authorId)
         {
             return GetAuthor(authorId) == null ? false : true;
+        }
+
+        public bool IsBookExistsFromAuthor(Guid bookId, Guid authorId)
+        {
+            return _ctx.Books.Where(x => x.AuthorId == authorId && x.Id == bookId).FirstOrDefault() != null;
         }
 
         public bool SaveContext()

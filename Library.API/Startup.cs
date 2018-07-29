@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Library.API.Entities;
+using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -52,11 +53,30 @@ namespace Library.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseStatusCodePages();
             }
+            else
+                app.UseExceptionHandler(appBuilder =>
+                {
+                    appBuilder.Run(async context =>
+                    {
+                        context.Response.StatusCode = 500;
+                        await context.Response.WriteAsync("Something wierd happened");
+                    });
+                });
+
 
             libraryContext.EnsureSeedDataForContext();
-            app.UseStatusCodePages();
             app.UseMvc();
+
+            AutoMapper.Mapper.Initialize(c =>
+            {
+                c.CreateMap<Book, BookDto>()
+                .ForMember(dest => dest.AuthorName, opt => opt.ResolveUsing<BookDtoToAuthorResolver>());
+                c.CreateMap<Author, AuthorDto>()
+                .ForMember(dest => dest.Name, opt => opt.ResolveUsing<AuthorDtoToAuthorResolver>());
+            });
+            AutoMapper.Mapper.AssertConfigurationIsValid();
         }
     }
 }

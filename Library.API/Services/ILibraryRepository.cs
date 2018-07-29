@@ -15,6 +15,7 @@ namespace Library.API.Services
         void UpdateAuthor(Author author);
 
         bool IsAuthorExists(Guid authorId);
+        bool IsBookExistsFromAuthor(Guid bookId, Guid authorId);
 
         IEnumerable<Book> GetBooksForAuthor(Guid authorId);
 

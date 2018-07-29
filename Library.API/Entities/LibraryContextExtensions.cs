@@ -9,7 +9,10 @@ namespace Library.API.Entities
         public static void EnsureSeedDataForContext(this LibraryContext ctx)
         {
             if (ctx.Authors.Any())
-                return;
+            {
+                ctx.Authors.RemoveRange(ctx.Authors);
+                ctx.SaveChanges();
+            }
 
             var authors = new List<Author>()
             {
