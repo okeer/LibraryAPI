@@ -49,9 +49,9 @@ namespace Library.API.Controllers
                 throw new Exception("Error while creating author");
             //return StatusCode(500, "Server error");
 
-            var authorToReturn = Mapper.Map<AuthorDto>(authorEntity);
+            var authorToReturn = Mapper.Map<AuthorCreationDto>(authorEntity);
 
-            return CreatedAtRoute("GetAuthor", new { id = authorToReturn.Id }, authorToReturn);
+            return CreatedAtRoute("GetAuthor", new { id = authorEntity.Id }, authorToReturn);
         }
 
     }
