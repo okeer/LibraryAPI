@@ -88,7 +88,6 @@ namespace Library.API
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
 
                 c.CreateMap<AuthorCreationDto, Author>()
-                .ForMember(x => x.Books, opt => opt.Ignore())
                 .ForMember(x => x.Id, opt => opt.Ignore());
             });
             AutoMapper.Mapper.AssertConfigurationIsValid();
