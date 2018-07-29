@@ -90,7 +90,17 @@ namespace Library.API.Controllers
 
             var bookEntity = _repo.GetBookForAuthor(bookId, authorId);
             if (bookEntity == null)
-                return NotFound();
+            {
+                bookEntity = Mapper.Map<Book>(updatedBookDto);
+                bookEntity.Id = bookId;
+                _repo.AddBookForAuthor(bookEntity, authorId);
+                if (!_repo.SaveContext())
+                    throw new Exception("DB error while upserting a book resource");
+
+                var bookToReturn = Mapper.Map<Book, BookDto>(bookEntity);
+
+                return CreatedAtRoute("GetBookForAuthor", new { authorId = authorId, bookId = bookId }, bookToReturn);
+            }
 
             Mapper.Map(updatedBookDto, bookEntity);
             _repo.UpdateBook(bookEntity);
