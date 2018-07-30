@@ -5,10 +5,9 @@ using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Library.API.Controllers
 {
@@ -16,10 +15,12 @@ namespace Library.API.Controllers
     public class BooksController : Controller
     {
         private ILibraryRepository _repo;
+        private ILogger<BooksController> _logger;
 
-        public BooksController(ILibraryRepository repo)
+        public BooksController(ILibraryRepository repo, ILogger<BooksController> logger)
         {
             _repo = repo;
+            _logger = logger;
         }
 
         [HttpGet()]
@@ -83,6 +84,8 @@ namespace Library.API.Controllers
             _repo.DeleteBook(bookEntity);
             if (!_repo.SaveContext())
                 throw new Exception("An error has occurred while deleting of a book");
+
+            _logger.LogError(100, "Boo");
 
             return NoContent();
         }
