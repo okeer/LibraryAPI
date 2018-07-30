@@ -23,7 +23,7 @@ namespace Library.API.Controllers
             _logger = logger;
         }
 
-        [HttpGet()]
+        [HttpGet(Name = "GetBooksForAuthor")]
         public IActionResult GetBooksForAuthor(Guid authorId)
         {
             if (!_repo.IsAuthorExists(authorId))
@@ -45,7 +45,7 @@ namespace Library.API.Controllers
             return Ok(Mapper.Map<Book, BookDto>(bookFromRepo));
         }
 
-        [HttpPost()]
+        [HttpPost(Name = "CreateBookForAuthor")]
         public IActionResult CreateBookForAuthor(Guid authorId, [FromBody] BookCreationDto bookForCreation)
         {
             if (bookForCreation == null)
