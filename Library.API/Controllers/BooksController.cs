@@ -133,6 +133,11 @@ namespace Library.API.Controllers
                 var bookToCreate = new BookForUpdateDto();
                 jsonPatch.ApplyTo(bookToCreate);
 
+                TryValidateModel(bookToCreate);
+
+                if (!ModelState.IsValid)
+                    return new UnprocessableEntityObjectResult(ModelState);
+
                 var bookEntityToAdd = Mapper.Map<Book>(bookToCreate);
                 bookEntityToAdd.Id = bookId;
 
@@ -145,10 +150,12 @@ namespace Library.API.Controllers
             }
 
             var bookCreationDto = Mapper.Map<BookForUpdateDto>(bookEntity);
-            jsonPatch.ApplyTo(bookCreationDto);
+            jsonPatch.ApplyTo(bookCreationDto, ModelState);
+
+            TryValidateModel(bookCreationDto);
 
             if (!ModelState.IsValid)
-                throw new Exception("Something went wrong");
+                return new UnprocessableEntityObjectResult(ModelState);
 
             Mapper.Map(bookCreationDto, bookEntity);
             _repo.UpdateBook(bookEntity);
