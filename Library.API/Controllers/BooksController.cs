@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Library.API.Entities;
+using Library.API.Helpers;
 using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
@@ -48,6 +49,12 @@ namespace Library.API.Controllers
         {
             if (bookForCreation == null)
                 return BadRequest();
+
+            if (bookForCreation.Title == bookForCreation.Description)
+                ModelState.AddModelError(nameof(BookCreationDto), "Title and Description fields should not be the same.");
+
+            if (!ModelState.IsValid)
+                return new UnprocessableEntityObjectResult(ModelState);
 
             if (!_repo.IsAuthorExists(authorId))
                 return NotFound();
@@ -122,7 +129,20 @@ namespace Library.API.Controllers
 
             var bookEntity = _repo.GetBookForAuthor(bookId, authorId);
             if (bookEntity == null)
-                return NotFound();
+            {
+                var bookToCreate = new BookCreationDto();
+                jsonPatch.ApplyTo(bookToCreate);
+
+                var bookEntityToAdd = Mapper.Map<Book>(bookToCreate);
+                bookEntityToAdd.Id = bookId;
+
+                _repo.AddBookForAuthor(bookEntityToAdd, authorId);
+
+                if (!_repo.SaveContext())
+                    throw new Exception("err");
+
+                return CreatedAtRoute("GetBookForAuthor", new { authorId, bookId }, bookToCreate);
+            }
 
             var bookCreationDto = Mapper.Map<BookCreationDto>(bookEntity);
             jsonPatch.ApplyTo(bookCreationDto);
