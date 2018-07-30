@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Library.API.Helpers
+﻿namespace Library.API.Helpers
 {
     public class AuthorsResourceParameters
     {
