@@ -85,6 +85,11 @@ namespace Library.API
                 .ForMember(x => x.Author, opt => opt.Ignore())
                 .ForMember(x => x.AuthorId, opt => opt.Ignore());
 
+                c.CreateMap<BookForUpdateDto, Book>()
+                .ForMember(x => x.Id, opt => opt.Ignore())
+                .ForMember(x => x.Author, opt => opt.Ignore())
+                .ForMember(x => x.AuthorId, opt => opt.Ignore());
+
                 c.CreateMap<Author, AuthorDto>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
 

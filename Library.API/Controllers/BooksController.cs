@@ -119,7 +119,7 @@ namespace Library.API.Controllers
         }
 
         [HttpPatch("{bookId}")]
-        public IActionResult PatchBookForAuthor(Guid authorId, Guid bookId, [FromBody] JsonPatchDocument<BookCreationDto> jsonPatch)
+        public IActionResult PatchBookForAuthor(Guid authorId, Guid bookId, [FromBody] JsonPatchDocument<BookForUpdateDto> jsonPatch)
         {
             if (jsonPatch == null)
                 return BadRequest();
@@ -130,7 +130,7 @@ namespace Library.API.Controllers
             var bookEntity = _repo.GetBookForAuthor(bookId, authorId);
             if (bookEntity == null)
             {
-                var bookToCreate = new BookCreationDto();
+                var bookToCreate = new BookForUpdateDto();
                 jsonPatch.ApplyTo(bookToCreate);
 
                 var bookEntityToAdd = Mapper.Map<Book>(bookToCreate);
@@ -144,7 +144,7 @@ namespace Library.API.Controllers
                 return CreatedAtRoute("GetBookForAuthor", new { authorId, bookId }, bookToCreate);
             }
 
-            var bookCreationDto = Mapper.Map<BookCreationDto>(bookEntity);
+            var bookCreationDto = Mapper.Map<BookForUpdateDto>(bookEntity);
             jsonPatch.ApplyTo(bookCreationDto);
 
             if (!ModelState.IsValid)
