@@ -63,7 +63,14 @@ namespace Library.API.Services
         {
             var allAuthors = _ctx.Authors
                 .OrderBy(x => x.FirstName)
-                .ThenBy(x => x.LastName);
+                .ThenBy(x => x.LastName)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(resourceParameters.SearchQuery))
+            {
+                var query = resourceParameters.SearchQuery.Trim().ToLowerInvariant();
+                allAuthors = allAuthors.Where(x => x.FirstName.ToLowerInvariant().Contains(query) || x.LastName.ToLowerInvariant().Contains(query));
+            }
 
             return PagedList<Author>.Create(allAuthors, resourceParameters.PageNumber, resourceParameters.PageSize);
         }

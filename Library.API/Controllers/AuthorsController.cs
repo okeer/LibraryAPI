@@ -56,6 +56,9 @@ namespace Library.API.Controllers
         {
             var authorsFromRepo = _repo.GetAuthors(resourceParameters);
 
+            if (!authorsFromRepo.Any() && !string.IsNullOrEmpty(resourceParameters.SearchQuery))
+                return NotFound();
+
             var previousPageLink = authorsFromRepo.HasPrevious ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.PreviousPage) : null;
             var nextPageLink = authorsFromRepo.HasNext ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.NextPage) : null;
 
