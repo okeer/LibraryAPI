@@ -15,13 +15,15 @@ namespace Library.API.Controllers
     public class AuthorsController : Controller
     {
         private IUrlHelper _uriHelper;
+        private ITypeHelperService _typeHelperService;
 
         private ILibraryRepository _repo { get; }
 
-        public AuthorsController(ILibraryRepository repo, IUrlHelper uriHelper)
+        public AuthorsController(ILibraryRepository repo, IUrlHelper uriHelper, ITypeHelperService typeHelperService)
         {
             _repo = repo;
             _uriHelper = uriHelper;
+            _typeHelperService = typeHelperService;
         }
 
         private string CreateAuthorsResourceUri(AuthorsResourceParameters authorsResourceParameters, ResourceUriType type)
@@ -56,6 +58,9 @@ namespace Library.API.Controllers
 
             if (!authorsFromRepo.Any() && !string.IsNullOrEmpty(resourceParameters.SearchQuery))
                 return NotFound();
+
+            if (!_typeHelperService.TypeHasProperties<AuthorDto>(resourceParameters.Fields))
+                return BadRequest();
 
             var previousPageLink = authorsFromRepo.HasPrevious ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.PreviousPage) : null;
             var nextPageLink = authorsFromRepo.HasNext ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.NextPage) : null;
