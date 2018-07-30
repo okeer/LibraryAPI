@@ -72,7 +72,9 @@ namespace Library.API.Controllers
 
             Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));
+            var authorsDtoToReturn = Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo);
+
+            return Ok(authorsDtoToReturn.ShapeData(resourceParameters.Fields));
         }
 
         [HttpGet("{id}", Name = "GetAuthor")]
