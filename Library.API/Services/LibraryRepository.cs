@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Library.API.Entities;
+using Library.API.Helpers;
 
 namespace Library.API.Services
 {
@@ -52,12 +53,24 @@ namespace Library.API.Services
 
         public IEnumerable<Author> GetAuthors()
         {
-            return _ctx.Authors.ToList();
+            return _ctx.Authors
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
+                .ToList();
+        }
+
+        public PagedList<Author> GetAuthors(AuthorsResourceParameters resourceParameters)
+        {
+            var allAuthors = _ctx.Authors
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.LastName);
+
+            return PagedList<Author>.Create(allAuthors, resourceParameters.PageNumber, resourceParameters.PageSize);
         }
 
         public IEnumerable<Author> GetAuthors(IEnumerable<Guid> authorIds)
         {
-            return GetAuthors().Where(x => authorIds.Contains(x.Id))
+            return _ctx.Authors.Where(x => authorIds.Contains(x.Id))
                 .OrderBy(x => x.FirstName)
                 .OrderBy(x => x.LastName)
                 .ToList();

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Library.API.Entities;
+using Library.API.Helpers;
 using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -14,17 +16,62 @@ namespace Library.API.Controllers
     [Route("api/authors")]
     public class AuthorsController : Controller
     {
+        private IUrlHelper _uriHelper;
+
         private ILibraryRepository _repo { get; }
 
-        public AuthorsController(ILibraryRepository repo)
+        public AuthorsController(ILibraryRepository repo, IUrlHelper uriHelper)
         {
             _repo = repo;
+            _uriHelper = uriHelper;
         }
 
-        [HttpGet()]
-        public IActionResult GetAuthors()
+        private string CreateAuthorsResourceUri(AuthorsResourceParameters authorsResourceParameters, ResourceUriType type)
         {
-            return Ok(Mapper.Map<IEnumerable<AuthorDto>>(_repo.GetAuthors()));
+            switch (type)
+            {
+                case ResourceUriType.PreviousPage:
+                    return _uriHelper.Link("GetAuthors", new
+                    {
+                        pageNumber = authorsResourceParameters.PageNumber - 1,
+                        pageSize = authorsResourceParameters.PageSize
+                    });
+                case ResourceUriType.NextPage:
+                    return _uriHelper.Link("GetAuthors", new
+                    {
+                        pageNumber = authorsResourceParameters.PageNumber + 1,
+                        pageSize = authorsResourceParameters.PageSize
+                    });
+                default:
+                    return _uriHelper.Link("GetAuthors", new
+                    {
+                        pageNumber = authorsResourceParameters.PageNumber,
+                        pageSize = authorsResourceParameters.PageSize
+                    });
+            }
+        }
+
+        [HttpGet(Name = "GetAuthors")]
+        public IActionResult GetAuthors([FromQuery] AuthorsResourceParameters resourceParameters)
+        {
+            var authorsFromRepo = _repo.GetAuthors(resourceParameters);
+
+            var previousPageLink = authorsFromRepo.HasPrevious ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.PreviousPage) : null;
+            var nextPageLink = authorsFromRepo.HasNext ? CreateAuthorsResourceUri(resourceParameters, ResourceUriType.NextPage) : null;
+
+            var paginationMetadata = new
+            {
+                totalCount = authorsFromRepo.TotalCount,
+                pageSize = authorsFromRepo.PageSize,
+                currentPage = authorsFromRepo.CurrentPage,
+                totalPages = authorsFromRepo.TotalPages,
+                previousPageLink,
+                nextPageLink
+            };
+
+            Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));
         }
 
         [HttpGet("{id}", Name = "GetAuthor")]
