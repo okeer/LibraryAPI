@@ -87,7 +87,7 @@ namespace Library.API.Controllers
         }
 
         [HttpGet(Name = "GetAuthors")]
-        public IActionResult GetAuthors([FromQuery] AuthorsResourceParameters resourceParameters)
+        public IActionResult GetAuthors([FromQuery] AuthorsResourceParameters resourceParameters, [FromHeader(Name = "Accept")] string mediaType)
         {
             var authorsFromRepo = _repo.GetAuthors(resourceParameters);
 
@@ -96,38 +96,43 @@ namespace Library.API.Controllers
 
             if (!_typeHelperService.TypeHasProperties<AuthorDto>(resourceParameters.Fields))
                 return BadRequest();
-            var paginationMetadata = new
-            {
-                totalCount = authorsFromRepo.TotalCount,
-                pageSize = authorsFromRepo.PageSize,
-                currentPage = authorsFromRepo.CurrentPage,
-                totalPages = authorsFromRepo.TotalPages
-            };
-
-            Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
 
             var authorsDtoToReturn = Mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo);
-
-            var links = CreateLinksForAuthors(resourceParameters, authorsFromRepo.HasNext, authorsFromRepo.HasPrevious);
-
             var shapedAuthors = authorsDtoToReturn.ShapeData(resourceParameters.Fields);
 
-            var shapedAuthorsWithLinks = shapedAuthors.Select(x =>
+            if (mediaType == "application/hateos+json")
             {
-                var authorAsDict = x as IDictionary<string, object>;
-                var authorLinks = CreateLinksForAuthor((Guid)authorAsDict["Id"], resourceParameters.Fields);
+                var paginationMetadata = new
+                {
+                    totalCount = authorsFromRepo.TotalCount,
+                    pageSize = authorsFromRepo.PageSize,
+                    currentPage = authorsFromRepo.CurrentPage,
+                    totalPages = authorsFromRepo.TotalPages
+                };
 
-                authorAsDict.Add("links", authorLinks);
-                return authorAsDict;
-            });
+                Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
 
-            var linkedCollectionResource = new
-            {
-                value = shapedAuthorsWithLinks,
-                links = links
-            };
+                var links = CreateLinksForAuthors(resourceParameters, authorsFromRepo.HasNext, authorsFromRepo.HasPrevious);
+                
+                var shapedAuthorsWithLinks = shapedAuthors.Select(x =>
+                {
+                    var authorAsDict = x as IDictionary<string, object>;
+                    var authorLinks = CreateLinksForAuthor((Guid)authorAsDict["Id"], resourceParameters.Fields);
 
-            return Ok(linkedCollectionResource);
+                    authorAsDict.Add("links", authorLinks);
+                    return authorAsDict;
+                });
+
+                var linkedCollectionResource = new
+                {
+                    value = shapedAuthorsWithLinks,
+                    links = links
+                };
+
+                return Ok(linkedCollectionResource);
+            }
+            else
+                return Ok(shapedAuthors);
         }
 
         [HttpGet("{id}", Name = "GetAuthor")]
